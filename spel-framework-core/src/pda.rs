@@ -117,7 +117,10 @@ pub fn compute_private_pda(
     };
 
     let pda_seed = PdaSeed::new(combined);
-    AccountId::for_private_pda(program_id, &pda_seed, npk)
+    // rc5+ added an `identifier: Identifier` (u128) param to diversify private PDA
+    // addresses; this seed-based helper has no identifier, so use 0 (the RLN guest
+    // uses public PDAs only and never calls this path).
+    AccountId::for_private_pda(program_id, &pda_seed, npk, 0u128)
 }
 
 /// Compute a PDA from a program ID and multiple [`ToSeed`] values.

@@ -3,11 +3,8 @@ members = [
     "spel-framework",
     "spel-framework-core",
     "spel-framework-macros",
-    "spel-cli",
-    "spel-client-gen",
-    "spel-ffi-compile-test",
 ]
-exclude = ["tests/e2e/fixture_program"]
+exclude = ["tests/e2e/fixture_program", "spel-cli", "spel-client-gen", "spel-ffi-compile-test"]
 resolver = "2"
 
 # ── Workspace-wide lint policy ──────────────────────────────────────────────
