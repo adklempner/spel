@@ -103,6 +103,7 @@ pub fn compute_private_pda(
     program_id: &ProgramId,
     seeds: &[&[u8; 32]],
     npk: &NullifierPublicKey,
+    vpk: &nssa_core::encryption::ViewingPublicKey,
 ) -> AccountId {
     assert!(!seeds.is_empty(), "PDA requires at least one seed");
 
@@ -117,9 +118,9 @@ pub fn compute_private_pda(
     };
 
     let pda_seed = PdaSeed::new(combined);
-    // lez-core-v0.2.0 added a u128 `identifier` to private-PDA derivation; default
-    // to 0 (the common case) until callers need to pass a specific identifier.
-    AccountId::for_private_pda(program_id, &pda_seed, npk, 0)
+    // lez-core v0.2.0 added a u128 `identifier` and v0.2.2 a viewing key to
+    // private-PDA derivation; identifier defaults to 0 (the common case).
+    AccountId::for_private_pda(program_id, &pda_seed, npk, vpk, 0)
 }
 
 /// Compute a PDA from a program ID and multiple [`ToSeed`] values.
