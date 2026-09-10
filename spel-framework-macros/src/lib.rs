@@ -311,9 +311,8 @@ fn expand_lez_program(input: ItemMod, config: ProgramConfig) -> syn::Result<Toke
             let block_validity_window = parts.block_validity_window;
             let timestamp_validity_window = parts.timestamp_validity_window;
 
-            assert_eq!(
-                pre_states_clone.len(),
-                post_states.len(),
+            assert!(
+                post_states.len() <= pre_states_clone.len(),
                 "handler returned {} accounts for {} declared",
                 post_states.len(),
                 pre_states_clone.len(),
@@ -322,26 +321,30 @@ fn expand_lez_program(input: ItemMod, config: ProgramConfig) -> syn::Result<Toke
             // Pair each declared account's pre-state with what the handler left, and express the
             // difference the way v0.2.5 wants it.
             //
-            // Every declared account stays in the output even when untouched: LEZ rejects an
-            // output that omits one (DeclaredAccountMissingFromOutput), and `AccountStateDiff`
-            // makes an untouched account nearly free — `new` drops `post_data` when it matches
-            // the pre-state, so an unchanged account costs no second copy of its data.
+            // A handler names only the accounts it actually writes, and LEZ rejects any output
+            // that omits a declared account (DeclaredAccountMissingFromOutput). So the ones the
+            // handler said nothing about are carried through unchanged rather than dropped —
+            // this is the whole reason this fork exists, and the diff model makes it cheap:
+            // `AccountStateDiff::unchanged` stores no second copy of the account's data.
             //
-            // Nothing is filtered here. Claims are gone: a program that writes data to an
-            // unowned account thereby owns it, and one that leaves an account alone leaves its
-            // ownership alone too.
+            // Nothing is filtered. Claims are gone in v0.2.5: writing data to an unowned account
+            // is what takes ownership of it, and leaving an account alone leaves its ownership
+            // alone too.
+            let mut post_states = post_states.into_iter();
             let state_diffs: Vec<nssa_core::program::AccountStateDiff> = pre_states_clone
                 .into_iter()
-                .zip(post_states.into_iter())
-                .map(|(pre, post)| {
-                    let before = pre.account.balance;
-                    let after = post.balance;
-                    let balance_diff = if after >= before {
-                        nssa_core::account::BalanceDiff::Add(after - before)
-                    } else {
-                        nssa_core::account::BalanceDiff::Sub(before - after)
-                    };
-                    nssa_core::program::AccountStateDiff::new(pre, balance_diff, post.data)
+                .map(|pre| match post_states.next() {
+                    None => nssa_core::program::AccountStateDiff::unchanged(pre),
+                    Some(post) => {
+                        let before = pre.account.balance;
+                        let after = post.balance;
+                        let balance_diff = if after >= before {
+                            nssa_core::account::BalanceDiff::Add(after - before)
+                        } else {
+                            nssa_core::account::BalanceDiff::Sub(before - after)
+                        };
+                        nssa_core::program::AccountStateDiff::new(pre, balance_diff, post.data)
+                    }
                 })
                 .collect();
 
