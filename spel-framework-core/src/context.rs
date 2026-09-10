@@ -5,7 +5,7 @@
 //! values from [`nssa_core::program::ProgramInput`] at call time.
 //! The context parameter is **never** part of the instruction ABI or IDL.
 
-use crate::prelude::ProgramId;
+use crate::prelude::AccountId;
 
 /// Trusted execution metadata supplied by the SPEL guest entrypoint.
 ///
@@ -26,17 +26,17 @@ use crate::prelude::ProgramId;
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct ProgramContext {
     /// The program ID of the currently executing program.
-    pub self_program_id: ProgramId,
+    pub self_program_id: AccountId,
     /// The program ID of the caller (the program that invoked this one).
     /// If there is no explicit caller (e.g. top-level transaction),
-    /// this is set to [`nssa_core::program::DEFAULT_PROGRAM_ID`] (all zeros).
-    pub caller_program_id: ProgramId,
+    /// this is set to [`nssa_core::program::DEFAULT_PROGRAM_OWNER`] (all zeros).
+    pub caller_program_id: AccountId,
 }
 
 impl ProgramContext {
     /// Create a new context from program input values.
     #[must_use]
-    pub const fn new(self_program_id: ProgramId, caller_program_id: ProgramId) -> Self {
+    pub const fn new(self_program_id: AccountId, caller_program_id: AccountId) -> Self {
         Self {
             self_program_id,
             caller_program_id,

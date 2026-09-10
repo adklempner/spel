@@ -20,15 +20,14 @@ pub mod idl_gen;
 pub mod prelude {
     pub use crate::error::{SpelError, SpelResult};
     pub use crate::pda::{compute_pda, compute_pda_multi, seed_from_str, ToSeed};
-    pub use crate::spel_output::AutoClaim;
-    pub use crate::types::{AccountConstraint, IntoPostState, SpelOutput, SpelOutputParts};
+    pub use crate::types::{AccountConstraint, IntoPostAccount, SpelOutput, SpelOutputParts};
 
     // nssa_core::account
-    pub use nssa_core::account::{Account, AccountId, AccountWithMetadata};
+    pub use nssa_core::account::{Account, AccountId, AccountWithMetadata, BalanceDiff, Data};
 
     // nssa_core::program
     pub use nssa_core::program::{
-        AccountPostState, BlockValidityWindow, ChainedCall, Claim, InvalidWindow, PdaSeed,
+        AccountStateDiff, BlockValidityWindow, CallKind, ChainedCall, InvalidWindow, PdaSeed,
         ProgramId, TimestampValidityWindow, ValidityWindow,
     };
 
@@ -36,7 +35,10 @@ pub mod prelude {
     pub use nssa_core::{BlockId, Timestamp};
 
     // spel-framework additional re-exports
-    pub use nssa_core::program::{read_lee_inputs, InstructionData, ProgramInput, ProgramOutput};
+    pub use nssa_core::program::{
+        read_lee_call, respond_unsupported_call, InstructionData, ProgramCall, ProgramInput,
+        ProgramOutput,
+    };
 
     // Execution context for instruction handlers (issue #172)
     pub use crate::context::ProgramContext;

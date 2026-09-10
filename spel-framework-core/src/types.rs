@@ -3,17 +3,19 @@
 //! These are thin wrappers/adapters that bridge framework ergonomics
 //! with real SPEL core types.
 
+use nssa_core::account::Account;
 use nssa_core::program::{
-    AccountPostState, BlockValidityWindow, ChainedCall, InvalidWindow, TimestampValidityWindow,
-    ValidityWindow,
+    BlockValidityWindow, ChainedCall, InvalidWindow, TimestampValidityWindow, ValidityWindow,
 };
 
-/// Trait for types that can be converted into an [`AccountPostState`].
+/// Trait for types that can be converted into a post-execution [`Account`].
 ///
-/// Implemented for `(Account, AutoClaim)`, `(Account, &AutoClaim)`, and
-/// `AccountPostState` itself, so [`SpelOutput::execute`] accepts any of these.
-pub trait IntoPostState {
-    fn into_post_state(self) -> AccountPostState;
+/// A handler describes what each declared account should look like *after* it
+/// runs. The generated entry point pairs those with the pre-states LEZ supplied
+/// and derives the `AccountStateDiff` values the protocol actually wants, so a
+/// handler never has to spell out a balance delta or restate unchanged data.
+pub trait IntoPostAccount {
+    fn into_post_account(self) -> Account;
 }
 
 /// Output from an instruction handler.
@@ -24,7 +26,7 @@ pub trait IntoPostState {
 #[derive(Debug, Clone)]
 #[non_exhaustive]
 pub struct SpelOutput {
-    pub post_states: Vec<AccountPostState>,
+    pub post_states: Vec<Account>,
     pub chained_calls: Vec<ChainedCall>,
     pub block_validity_window: BlockValidityWindow,
     pub timestamp_validity_window: TimestampValidityWindow,
@@ -113,8 +115,8 @@ impl SpelOutput {
 #[derive(Debug, Clone)]
 #[non_exhaustive]
 pub struct SpelOutputParts {
-    /// Post-transaction account states (claims, mutability).
-    pub post_states: Vec<AccountPostState>,
+    /// Each declared account as the handler left it, in declaration order.
+    pub post_states: Vec<Account>,
     /// Chained calls to other programs.
     pub chained_calls: Vec<ChainedCall>,
     /// Block range in which the transaction is valid.
