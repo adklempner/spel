@@ -1236,7 +1236,7 @@ fn generate_validation(instructions: &[InstructionInfo]) -> Vec<TokenStream2> {
                             {
                                 #(#seed_exprs)*
                                 let __expected_id = spel_framework::pda::compute_private_pda(
-                                    self_account_id, &[#(#seed_refs),*], #npk_param, #vpk_param
+                                    self_program_id, &[#(#seed_refs),*], #npk_param, #vpk_param
                                 );
                                 if accounts[#idx].account_id != __expected_id {
                                     return Err(spel_framework::error::SpelError::PdaMismatch {
@@ -1252,7 +1252,7 @@ fn generate_validation(instructions: &[InstructionInfo]) -> Vec<TokenStream2> {
                             {
                                 #(#seed_exprs)*
                                 let __expected_id = spel_framework::pda::compute_pda(
-                                    self_account_id, &[#(#seed_refs),*]
+                                    self_program_id, &[#(#seed_refs),*]
                                 );
                                 if accounts[#idx].account_id != __expected_id {
                                     return Err(spel_framework::error::SpelError::PdaMismatch {
